@@ -3,7 +3,13 @@ public class RunDuplex {
         EncryptedReceiver recieverThread = new EncryptedReceiver();
         EncryptedSender senderThread = new EncryptedSender();
 
-        recieverThread.start();
-        senderThread.start();
+        Thread recvr = recieverThread.start();
+        Thread sendr = senderThread.start();
+        try {
+            recvr.wait();
+            sendr.wait();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

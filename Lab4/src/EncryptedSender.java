@@ -12,9 +12,10 @@ public class EncryptedSender implements Runnable{
 
     static DatagramSocket sending_socket;
 
-    public void start(){
+    public Thread start(){
         Thread thread = new Thread(this);
         thread.start();
+        return thread;
     }
 
     public void run (){
