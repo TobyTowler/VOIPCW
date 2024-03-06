@@ -2,10 +2,10 @@
 Security Datagrams
 
 Encryption
- * Encrypted using Long values
- * Long has a size of 64 bits, twice int (32 bits)
- * This is the largest data that ^ can be applied to
- * The longer key means that there are more combinations, therefore more secure
+ * Diffie-Helman
+ * R1 and R2 are sent before communication starts
+ * K is also calculated before communication starts
+ * This means both the sender and receiver are ready when voice communication starts
 
 Sender Key
  * Used String
