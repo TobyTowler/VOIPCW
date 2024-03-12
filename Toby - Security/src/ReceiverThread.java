@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class ReceiverThread implements Runnable{
 
@@ -79,10 +80,10 @@ public class ReceiverThread implements Runnable{
 
         boolean running = true;
         while (running){
-            byte[] secureBuffer = new byte[522];
+            byte[] secureBuffer = new byte[526];
             byte[] buffer = new byte[512];
 
-            DatagramPacket packet = new DatagramPacket(secureBuffer, 0, 522);
+            DatagramPacket packet = new DatagramPacket(secureBuffer, 0, 526);
 
             //receiving_socket.setSoTimeout(500);
             try {
@@ -97,11 +98,17 @@ public class ReceiverThread implements Runnable{
             byte[] authKeyBytes = new byte[10];
             bb.get(authKeyBytes);
             String bytes = new String(authKeyBytes, StandardCharsets.UTF_8);
+            int hashed = bb.getInt();
             bb.get(buffer);
 
 
             if(!authKeyString.contentEquals(bytes)){
                 System.err.println("Packet received from non genuine sender");
+                continue;
+            }
+
+            if(!authenticateHash(authKeyString, buffer, hashed)){
+                System.err.println("Non genuine packet received");
                 continue;
             }
 
@@ -180,4 +187,15 @@ public class ReceiverThread implements Runnable{
     BigInteger calculateK(BigInteger R2, BigInteger Y, BigInteger P){
         return new BigInteger(String.valueOf(R2.modPow(Y, P)));
     }
+
+    int hashPacket(String key, byte[] buffer){
+        byte[] toBeHashed = new byte[key.getBytes().length + buffer.length];
+        return Arrays.hashCode(toBeHashed);
+    }
+
+    boolean authenticateHash(String key, byte[] buffer, int hashed){
+        int hash = hashPacket(key, buffer);
+        return hash == hashed;
+    }
+
 }

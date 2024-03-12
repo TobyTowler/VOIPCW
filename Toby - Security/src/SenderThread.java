@@ -5,6 +5,8 @@ import java.math.BigInteger;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Scanner;
 
 public class SenderThread implements Runnable{
 
@@ -98,15 +100,16 @@ public class SenderThread implements Runnable{
 
                 byte[] ecnryptedBlock = unwrapEncrypt.array();
 
-                ByteBuffer VOIPpacket = ByteBuffer.allocate(512 + authKeyString.length());
-//                VOIPpacket.putShort(authKey);
+                ByteBuffer VOIPpacket = ByteBuffer.allocate(512 + authKeyString.length() + 4);
+                //buffer size + key size + int size`
+
 
                 byte[] authKeyBytes = authKeyString.getBytes(StandardCharsets.UTF_8);
+
+                int hashCode = hashPacket(authKeyString, buffer);
+
                 VOIPpacket.put(authKeyBytes);
-
-
-                //System.out.println(authKeyBytes.length);
-
+                VOIPpacket.putInt(hashCode);
                 VOIPpacket.put(ecnryptedBlock);
 
                 byte[] securePacket = VOIPpacket.array();
@@ -177,5 +180,9 @@ public class SenderThread implements Runnable{
         return new BigInteger(String.valueOf(R2.modPow(X, P)));
     }
 
+    int hashPacket(String key, byte[] buffer){
+        byte[] toBeHashed = new byte[key.getBytes().length + buffer.length];
+        return Arrays.hashCode(toBeHashed);
+    }
 
 }
