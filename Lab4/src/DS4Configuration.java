@@ -170,7 +170,7 @@ public class DS4Configuration {
                     Crypto.applyCipher(encryptionKey,receivedPacket.audio, false);
                 }
                 //System.out.println("applied encryption");
-                if(!Arrays.equals(receivedPacket.calculateDigest(),receivedPacket.msgDigest)){
+                if(!Arrays.equals(receivedPacket.calculateDigest(),receivedPacket.msgDigest) || receivedPacket.sequenceNumber != schedule[next]){
                     //System.out.println("packet " + receivedPacket.sequenceNumber + " is probably corrupted");
                     Network.VoipPacket nextPacket = new Network.VoipPacket((short) 0, (byte) schedule[Math.floorMod(next - 1, 16)], lastBuffer);
                     audioBuffer[next] = nextPacket;
