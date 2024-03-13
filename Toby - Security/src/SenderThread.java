@@ -90,11 +90,6 @@ public class SenderThread implements Runnable{
 
                 ByteBuffer unwrapEncrypt = ByteBuffer.allocate(buffer.length);
                 ByteBuffer plainAudio = ByteBuffer.wrap(buffer);
-//                for(int i = 0; i<buffer.length/8; i++){
-//                    long eightByte = plainAudio.getLong();
-//                    eightByte = (eightByte ^ encryptionKey);
-//                    unwrapEncrypt.putLong(eightByte);
-//                }
 
                 unwrapEncrypt.put(encrypt(diffieK, buffer));
 

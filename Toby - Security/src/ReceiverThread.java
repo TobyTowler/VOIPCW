@@ -102,6 +102,12 @@ public class ReceiverThread implements Runnable{
             bb.get(buffer);
 
 
+            /*
+            Authenticating the key by itself and the whole hash of the code and string
+            means that we can distinguish between the sender being an imposter or the
+            payload being non genuine
+             */
+
             if(!authKeyString.contentEquals(bytes)){
                 System.err.println("Packet received from non genuine sender");
                 continue;
@@ -114,12 +120,6 @@ public class ReceiverThread implements Runnable{
 
             ByteBuffer unwrapDecrypt = ByteBuffer.allocate(buffer.length);
             ByteBuffer cipherText = ByteBuffer.wrap(buffer);
-
-//            for(int i = 0; i<buffer.length/8; i++){
-//                long eightByte = cipherText.getLong();
-//                eightByte = (eightByte ^ encryptionKey);
-//                unwrapDecrypt.putLong(eightByte);
-//            }
 
             unwrapDecrypt.put(decrypt(diffieK, buffer));
 

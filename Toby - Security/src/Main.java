@@ -2,7 +2,7 @@
 Security Datagrams
 
 Encryption
- * Diffie-Helman
+ * Diffie-Hellman
  * R1 and R2 are sent before communication starts
  * K is also calculated before communication starts
  * This means both the sender and receiver are ready when voice communication starts
