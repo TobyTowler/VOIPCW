@@ -11,9 +11,10 @@ public class EncryptedReceiver implements Runnable{
 
     static DatagramSocket receiving_socket;
 
-    public void start(){
+    public Thread start(){
         Thread thread = new Thread(this);
         thread.start();
+        return thread;
     }
 
     public void run (){

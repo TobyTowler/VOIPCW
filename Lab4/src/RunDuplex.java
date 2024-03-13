@@ -3,7 +3,7 @@ public class RunDuplex {
         EncryptedReceiver recieverThread = new EncryptedReceiver();
         EncryptedSender senderThread = new EncryptedSender();
 
-        recieverThread.start();
-        senderThread.start();
+        Thread recvr = recieverThread.start();
+        Thread sendr = senderThread.start();
     }
 }
