@@ -22,7 +22,7 @@ public class ReceiverThread implements Runnable{
         int PORT = 55555;
         InetAddress clientIP = null;
         try {
-            clientIP = InetAddress.getByName("localhost");
+            clientIP = InetAddress.getByName("139.222.96.185");
         } catch (UnknownHostException e) {
             System.err.println("COULD NOT CONNECT TO HOST");
             e.printStackTrace();
@@ -67,6 +67,7 @@ public class ReceiverThread implements Runnable{
         System.out.println("R1 recieved: " + diffieR1);
 
         try {
+
             sendR2(diffieR2, clientIP, 1234);
             System.out.println("R2 Send: " + diffieR2);
         } catch (IOException e) {

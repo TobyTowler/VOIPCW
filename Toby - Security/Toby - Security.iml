@@ -7,7 +7,8 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="voip" level="project" />
+    <orderEntry type="library" name="VOIPCW" level="project" />
     <orderEntry type="library" name="AudioLib" level="project" />
+    <orderEntry type="library" name="voip" level="project" />
   </component>
 </module>
