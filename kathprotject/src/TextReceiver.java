@@ -1,7 +1,3 @@
-/**
- *
- * @author  abj
- */
 import uk.ac.uea.cmp.voip.DatagramSocket2;
 
 import java.net.*;
