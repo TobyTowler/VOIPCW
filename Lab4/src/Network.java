@@ -4,8 +4,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -30,6 +28,8 @@ public class Network {
     }
 
     public static class VoipPacket{
+        public static final short SENDER_DHPC_TYPE = 0x10AA;
+        public static final short RECVR_DHPC_TYPE = 0x20BB;
         public final short authenticationKey;
         public final byte sequenceNumber;
         public byte[] msgDigest = new byte[32];
@@ -43,6 +43,50 @@ public class Network {
             this.sequenceNumber = sequenceNumber;
             this.authenticationKey = authKey;
             msgDigest = calculateDigest();
+        }
+
+        public static byte[] diffieHellmanPublicComponentPacket(short type,BigInteger pubComponent, BigInteger authKey){
+
+            ByteBuffer buf = ByteBuffer.allocate((Crypto.DiffieHellmanParameters.MODULUS_BIT_LENGTH / 8) + 2);
+            buf.putShort(type);
+            for (byte b : pubComponent.toByteArray()){
+               buf.put(b);
+            }
+            //buf.put(pubComponent.toByteArray());
+            byte[] digest = Crypto.digest(buf.array(), null);
+            ByteBuffer finalBuf = ByteBuffer.allocate((Crypto.DiffieHellmanParameters.MODULUS_BIT_LENGTH / 8) + 2 + 32);
+            finalBuf.putShort(type);
+            for(byte b : digest){
+               finalBuf.put(b);
+            }
+            for (byte b : pubComponent.toByteArray()){
+                finalBuf.put(b);
+            }
+            //finalBuf.put(digest);
+            return finalBuf.array();
+        }
+
+
+        public static BigInteger readValidDHPC(byte[] raw,short type){
+            ByteBuffer buffer = ByteBuffer.wrap(raw);
+            if (buffer.getShort() != type){
+                System.err.println("packet is not a DHPC type packet");
+                return null;
+            }
+            //ByteBuffer tmp = ByteBuffer.allocate((Crypto.DiffieHellmanParameters.MODULUS_BIT_LENGTH / 8) + 2);
+            //tmp.get(1,new byte [], 2, 8);
+            byte[] data = new byte[(Crypto.DiffieHellmanParameters.MODULUS_BIT_LENGTH / 8) + 2];
+            buffer.get(0,data,0,2);;
+            buffer.get(2 + 32,data,2, Crypto.DiffieHellmanParameters.MODULUS_BIT_LENGTH/8);
+
+            byte[] receivedDigest = new byte[32];
+            buffer.get(2,receivedDigest,0,32);
+            byte[] computedDigest = Crypto.digest(data, null);
+            if(!Arrays.equals(computedDigest,receivedDigest)){
+               System.out.println("digest does not match");
+               return null;
+            }
+            return new BigInteger(data,2,Crypto.DiffieHellmanParameters.MODULUS_BIT_LENGTH / 8);
         }
 
         public byte[] calculateDigest(){
