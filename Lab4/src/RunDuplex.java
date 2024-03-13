@@ -5,11 +5,5 @@ public class RunDuplex {
 
         Thread recvr = recieverThread.start();
         Thread sendr = senderThread.start();
-        try {
-            recvr.wait();
-            sendr.wait();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
 }
