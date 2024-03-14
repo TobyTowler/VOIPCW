@@ -20,6 +20,9 @@ Sender Key
 
 
  HOW TO USE
+
+ CHANGE IPS IN RECEIVER AND SENDER
+
  * Run Receiver
  * Run Sender
  * Sender press key

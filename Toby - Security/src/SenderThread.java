@@ -23,7 +23,7 @@ public class SenderThread implements Runnable{
 
         InetAddress clientIP = null;
         try {
-            clientIP = InetAddress.getByName("139.222.96.185");
+            clientIP = InetAddress.getByName("139.222.98.202");
         } catch (UnknownHostException e) {
             System.err.println("COULD NOT CONNECT TO HOST");
             e.printStackTrace();
