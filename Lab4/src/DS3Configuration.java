@@ -143,6 +143,7 @@ public class DS3Configuration {
         int[] schedule = Network.interleaveOrder(4);
 
         HashMap<Byte, byte[]> outOfOrder = new HashMap<>();
+        Network.VoipPacket toBePlayed = null;
         int next = 0;
 
         int latency = 16;
@@ -166,8 +167,15 @@ public class DS3Configuration {
 
 
                 if(outOfOrder.size() != latency){
-                    outOfOrder.put(receivedPacket.sequenceNumber,receivedPacket.audio);
+                    if(Arrays.equals(receivedPacket.msgDigest, receivedPacket.calculateDigest()) && receivedPacket.authenticationKey == getAuthKey()){
+                        outOfOrder.put(receivedPacket.sequenceNumber,receivedPacket.audio);
+                    }else{
+                        System.err.println("could not authenticate packet");
+                    }
+                }else{
+                    toBePlayed = receivedPacket;
                 }
+
                 System.out.println("received " + receivedPacket.sequenceNumber);
                 System.out.println("receiver buffer fill : " + outOfOrder.size());
                 if(outOfOrder.size()  == latency){
@@ -184,6 +192,9 @@ public class DS3Configuration {
                         }else{
                             player.playBlock(lastPlayed);
                         }
+                    }
+                    if (toBePlayed != null){
+                        outOfOrder.put(receivedPacket.sequenceNumber,receivedPacket.audio);
                     }
                 }else{
                     System.out.println("waiting for buffer to fill");
