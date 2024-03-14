@@ -17,6 +17,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class DS3Configuration {
     //public static final int TIMEOUT = 100;
     public static AtomicBoolean quitFlag = new AtomicBoolean(false);
+    public static final boolean INTERLEAVE_MODE = false;
+    public static final boolean REPEATER_MODE  = false;
 
     public static void main(String[] args) throws SocketException, UnknownHostException, InterruptedException, ExecutionException {
         int PORT = 55555;
@@ -30,6 +32,7 @@ public class DS3Configuration {
 
         //socket.setSoTimeout(TIMEOUT);
         DatagramSocket3 socket = new DatagramSocket3(null);
+        socket.setSoTimeout(500);
         socket.bind(address);
 
         Crypto.DiffieHellmanParameters diffieHellmanParameters = new Crypto.DiffieHellmanParameters();
@@ -59,7 +62,33 @@ public class DS3Configuration {
 
 
 
-    public static void send(DatagramSocket3 socket , SocketAddress receiverAddress, BigInteger encryptionKey) throws IOException, LineUnavailableException {
+    public static void interleaveSend(DatagramSocket3 socket, SocketAddress receiver, BigInteger encryptionKey) throws LineUnavailableException, IOException {
+        System.out.println("sender running");
+        int[] schedule = Network.interleaveOrder(4);
+        Network.VoipPacket[] packetBuffer = new Network.VoipPacket[16];
+        AudioRecorder recorder = new AudioRecorder();
+        while(getQuit() == false){
+            //System.out.println("sender in loop");
+            for(int i = 0; i < schedule.length; i++){
+                byte[] block = recorder.getBlock();
+                Network.VoipPacket packet = new Network.VoipPacket(getAuthKey(), (byte) schedule[i], block);
+                //System.out.println("applying encryption");
+                Crypto.applyCipher(encryptionKey,packet.audio,false);
+                packetBuffer[schedule[i]] = packet;
+            }
+
+            for(int i = 0; i < schedule.length; i++){
+                socket.send(packetBuffer[i].datagram(receiver));
+                System.out.println("sent " + i);
+            }
+
+        }
+
+        recorder.close();
+        socket.close();
+    }
+
+    public static void normalSend(DatagramSocket3 socket, SocketAddress receiverAddress, BigInteger encryptionKey) throws LineUnavailableException, IOException {
         System.out.println("sender running");
         //int[] schedule = Network.interleaveOrder(4);
         Network.VoipPacket[] packetBuffer = new Network.VoipPacket[16];
@@ -79,6 +108,15 @@ public class DS3Configuration {
 
         recorder.close();
         socket.close();
+    }
+
+
+    public static void send(DatagramSocket3 socket , SocketAddress receiverAddress, BigInteger encryptionKey) throws IOException, LineUnavailableException {
+        if (INTERLEAVE_MODE){
+            interleaveSend(socket,receiverAddress,encryptionKey);
+        }else {
+            normalSend(socket, receiverAddress, encryptionKey);
+        }
     }
 
     public static boolean getQuit(){
@@ -105,10 +143,10 @@ public class DS3Configuration {
         int[] schedule = Network.interleaveOrder(4);
 
         HashMap<Byte, byte[]> outOfOrder = new HashMap<>();
+        Network.VoipPacket toBePlayed = null;
         int next = 0;
 
-        int latency = 10;
-        Network.VoipPacket[] audioBuffer = new Network.VoipPacket[16];
+        int latency = 16;
         while(getQuit() == false){
             //System.out.println("recvr in loop");
             try {
@@ -125,24 +163,44 @@ public class DS3Configuration {
                     Crypto.applyCipher(encryptionKey,receivedPacket.audio, false);
                 }
 
+                //player.playBlock(receivedPacket.audio);
 
-                outOfOrder.put(receivedPacket.sequenceNumber,receivedPacket.audio);
+
+                if(outOfOrder.size() != latency){
+                    if(Arrays.equals(receivedPacket.msgDigest, receivedPacket.calculateDigest()) && receivedPacket.authenticationKey == getAuthKey()){
+                        outOfOrder.put(receivedPacket.sequenceNumber,receivedPacket.audio);
+                    }else{
+                        System.err.println("could not authenticate packet");
+                    }
+                }else{
+                    toBePlayed = receivedPacket;
+                }
+
                 System.out.println("received " + receivedPacket.sequenceNumber);
                 System.out.println("receiver buffer fill : " + outOfOrder.size());
                 if(outOfOrder.size()  == latency){
-                    int i = 0;
-                    byte[] maybeNext = outOfOrder.get(i);
-                    while(maybeNext == null){
-                        i += 1;
-                        maybeNext = outOfOrder.get(i);
-                        if(i == latency){
-                            break;
+                    System.out.println("emptying buffer");
+                    byte[] lastPlayed = new byte[512];
+                    for(int i = 0; i < 16; i++){
+                        byte[] maybeNext = outOfOrder.get((byte)i);
+                        if(maybeNext != null){
+                            player.playBlock(maybeNext);
+                            if(REPEATER_MODE == true){
+                                System.arraycopy(maybeNext, 0, lastPlayed, 0, 512);
+                            }
+                            outOfOrder.remove((byte)i);
+                        }else{
+                            player.playBlock(lastPlayed);
                         }
-                        System.out.println("lmafo");
                     }
-                    player.playBlock(maybeNext);
-                    outOfOrder.remove(i);
+                    if (toBePlayed != null){
+                        outOfOrder.put(receivedPacket.sequenceNumber,receivedPacket.audio);
+                    }
+                }else{
+                    System.out.println("waiting for buffer to fill");
                 }
+
+
 
 
             } catch (IOException e) {
