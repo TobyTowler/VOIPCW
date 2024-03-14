@@ -22,18 +22,21 @@ public class DS4Configuration {
 
     public static void main(String[] args) throws SocketException, UnknownHostException, InterruptedException, ExecutionException {
         int PORT = 55555;
-        InetAddress IP = InetAddress.getByName("localhost");
-        InetSocketAddress address = new InetSocketAddress(IP, PORT);
+        InetAddress IP = InetAddress.getByName("139.222.98.198");
+        //clientIP = InetAddress.getByName("139.222.98.198");  //CHANGE localhost to IP or NAME of client machine
 
-        DatagramSocket4 socket = new DatagramSocket4(null);
-        socket.bind(address);
+        InetAddress address = InetAddress.getByName("localhost");  //CHANGE localhost to IP or NAME of client machine
+
+        DatagramSocket4 socket = new DatagramSocket4(PORT);
+        //socket.bind(address);
+        //socket.connect(address);
         //socket.setSoTimeout(TIMEOUT);
         Crypto.DiffieHellmanParameters diffieHellmanParameters = new Crypto.DiffieHellmanParameters();
         BigInteger sharedSecret = new BigInteger("5445489838578453783549853290423473848590832940923504273483290275890324832904823940");
         ExecutorService pool = Executors.newFixedThreadPool(2);
             Future<?> threadA = pool.submit(() -> {
                 try {
-                    send(socket, address, sharedSecret);
+                    send(socket, address, PORT, sharedSecret);
                 } catch (IOException | LineUnavailableException e) {
                     e.printStackTrace();
                 }
@@ -52,7 +55,7 @@ public class DS4Configuration {
         socket.close();
     }
 
-    public static void send(DatagramSocket4 socket , SocketAddress receiverAddress, BigInteger encryptionKey) throws IOException, LineUnavailableException {
+    public static void send(DatagramSocket4 socket , InetAddress receiverAddress,int port, BigInteger encryptionKey) throws IOException, LineUnavailableException {
         System.out.println("sender running");
         int[] schedule = Network.interleaveOrder(4);
         Network.VoipPacket[] packetBuffer = new Network.VoipPacket[16];
@@ -68,7 +71,7 @@ public class DS4Configuration {
             }
 
             for(int i=0; i < 16; i++){
-                DatagramPacket packet = packetBuffer[i].datagram(receiverAddress);
+                DatagramPacket packet = packetBuffer[i].datagram(receiverAddress,port);
                 socket.send(packet);
                 //System.out.println("sent SN " + packetBuffer[i].sequenceNumber);
             }
