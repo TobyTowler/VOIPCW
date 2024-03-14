@@ -94,6 +94,7 @@ public class AudioReciever implements Runnable {
             bb.get(buffer);
             if (ID != IDPredicted) {
                 System.out.println("packet missing: " + IDPredicted);
+
 //                System.out.println(ID);
 //                System.out.println(IDPredicted);
                 IDPredicted++;
@@ -114,6 +115,14 @@ public class AudioReciever implements Runnable {
             byte[] decryptedBlock = unwrapDecrypt.array();
 
             try {
+                //IQ
+//              int lastIDAcquired = (int) (ID);
+//
+//              while(ID != IDPredicted){
+//                  player.playBlock(decryptedBlock);
+//                  lastIDAcquired--;
+//              }
+
                 player.playBlock(decryptedBlock);
             } catch (IOException e) {
                 throw new RuntimeException(e);

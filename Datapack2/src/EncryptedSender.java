@@ -25,7 +25,7 @@ public class EncryptedSender implements Runnable {
         //IP ADDRESS to send to
         InetAddress clientIP = null;
         try {
-            clientIP = InetAddress.getByName("localhost");  //CHANGE localhost to IP or NAME of client machine
+            clientIP = InetAddress.getByName("139.222.202.172");  //CHANGE localhost to IP or NAME of client machine
         } catch (UnknownHostException e) {
             System.out.println("ERROR: TextSender: Could not find client IP");
             e.printStackTrace();
