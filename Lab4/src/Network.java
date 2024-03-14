@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.time.Duration;
@@ -109,6 +110,16 @@ public class Network {
             }
         }
 
+        public DatagramPacket datagram(InetAddress address, int port){
+            ByteBuffer raw = ByteBuffer.allocate(PACKET_LENGTH_BYTES);
+            //System.out.println("digest bytes: " + msgDigest.length);
+            raw.putShort(authenticationKey);
+            raw.put(sequenceNumber);
+            raw.put(msgDigest);
+            raw.put(audio);
+            byte[] bytes = raw.array();
+            return new DatagramPacket(bytes,bytes.length, address,port);
+        }
         public DatagramPacket datagram(SocketAddress address){
             ByteBuffer raw = ByteBuffer.allocate(PACKET_LENGTH_BYTES);
             //System.out.println("digest bytes: " + msgDigest.length);
