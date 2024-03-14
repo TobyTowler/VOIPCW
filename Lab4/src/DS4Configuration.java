@@ -30,35 +30,9 @@ public class DS4Configuration {
         //socket.setSoTimeout(TIMEOUT);
         Crypto.DiffieHellmanParameters diffieHellmanParameters = new Crypto.DiffieHellmanParameters();
         BigInteger sharedSecret = new BigInteger("5445489838578453783549853290423473848590832940923504273483290275890324832904823940");
-        try (ExecutorService pool = Executors.newFixedThreadPool(2)) {
+        ExecutorService pool = Executors.newFixedThreadPool(2);
             Future<?> threadA = pool.submit(() -> {
                 try {
-                    //DatagramSocket4 socket = new DatagramSocket4(null);
-                    //socket.bind(address);
-                    //socket.setSoTimeout(TIMEOUT);
-                    /*
-                    BigInteger receivedComponent = null;
-                    Crypto.DiffieHellmanKey key = new Crypto.DiffieHellmanKey();
-                    BigInteger pubComp = key.publicDiffieHellmanComponent(diffieHellmanParameters);
-                    byte[] rawComp = Network.VoipPacket.diffieHellmanPublicComponentPacket(Network.VoipPacket.SENDER_DHPC_TYPE,pubComp, null);
-
-                    DatagramPacket packet = new DatagramPacket(rawComp, rawComp.length, address);
-                    while(receivedComponent == null) {
-                        System.out.println("sendr started waiting");
-                        socket.send(packet);
-                        Thread.sleep(200);
-                        socket.receive(packet);
-                        System.out.println("sendr finished waiting");
-                        receivedComponent = Network.VoipPacket.readValidDHPC(packet.getData(), Network.VoipPacket.RECVR_DHPC_TYPE);
-                        if(receivedComponent == null){
-                            System.out.println("could not complete key exchange retrying");
-                        }
-                    }
-                    BigInteger sharedSecret = key.sharedSecretKey(diffieHellmanParameters, receivedComponent);
-
-                    System.out.println("sender secret: " + new String(Base64.getEncoder().encode(sharedSecret.toByteArray())));
-                    //while(!getQuit()){}
-                    */
                     send(socket, address, sharedSecret);
                 } catch (IOException | LineUnavailableException e) {
                     e.printStackTrace();
@@ -67,41 +41,13 @@ public class DS4Configuration {
 
             Future<?> threadB = pool.submit(() -> {
                 try {
-                    //DatagramSocket4 socket = new DatagramSocket4(null);
-                    //socket.bind(address);
-                    //socket.setSoTimeout(TIMEOUT);
-                    /*
-                    Crypto.DiffieHellmanKey key = new Crypto.DiffieHellmanKey();
-                    BigInteger pubComp = key.publicDiffieHellmanComponent(diffieHellmanParameters);
-
-                    byte[] dummyBytes = new byte[2 + 32 + (Crypto.DiffieHellmanParameters.MODULUS_BIT_LENGTH / 8)];
-                    DatagramPacket dummy = new DatagramPacket(dummyBytes, dummyBytes.length, address);
-                    BigInteger receivedComponent = null;
-                    while(receivedComponent == null) {
-                        socket.receive(dummy);
-                        receivedComponent = Network.VoipPacket.readValidDHPC(dummy.getData(), Network.VoipPacket.SENDER_DHPC_TYPE);
-                    }
-
-                    byte[] rawComp = Network.VoipPacket.diffieHellmanPublicComponentPacket(Network.VoipPacket.RECVR_DHPC_TYPE,pubComp, null);
-                    DatagramPacket packet = new DatagramPacket(rawComp, rawComp.length, address);
-                    socket.send(packet);
-                    BigInteger sharedSecret = key.sharedSecretKey(diffieHellmanParameters, receivedComponent);
-
-                    System.out.println("receiver secret: " + new String(Base64.getEncoder().encode(sharedSecret.toByteArray())));
-                    //while(!getQuit()){}
-                     */
                     receive(socket,sharedSecret);
                 } catch (LineUnavailableException e) {
                     e.printStackTrace();
                 }
             });
-            //pool.awaitTermination()
             threadA.get();
             threadB.get();
-        } catch (ExecutionException e) {
-            socket.close();
-            throw new ExecutionException(e);
-        }
 
         socket.close();
     }

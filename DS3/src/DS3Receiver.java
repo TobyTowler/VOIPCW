@@ -88,38 +88,12 @@ public class DS3Receiver implements Runnable{
 //            System.out.println("RECEIVED : " + sequnceNumber);
             map.put(sequnceNumber, decryptedBlock);
 
-            //if(lastPlayed == 15) lastPlayed = -1;
+
             System.out.println("size: " + map.size());
             System.out.println("L " + lastPlayed);
-//            if(map.size() > 15){
-////                for(short i = (short) (lastPlayed +1); i<map.size(); i++){
-//                short i = (short) (lastPlayed+1);
-//                int count = 0;
-//                System.out.println("COUNT " + count);
-//                while (count<16){
-//                    System.out.println("running");
-//                    if(map.get(i) != null){
-//                        System.out.println("playing " + i);
-//                        //System.out.println(lastPlayed);
-//                        try {
-//                            player.playBlock(map.get(i));
-//                            map.remove(i);
-//                            lastPlayed = i;
-//                        } catch (IOException e) {
-//                            throw new RuntimeException(e);
-//                        }
-//                        break;
-//
-//                    }
-//                    else{
-//                        i +=1;
-//                        if(i == 15) i = -1;
-//                        count++;
-//                    }
-//                }
-//            }
 
-            if(map.size() > 16){
+
+            if(map.size() > 16){ //buffer size of 17 packets (16+1)
                 for(short i = (short) (lastPlayed+1); i<Short.MAX_VALUE; i++){
                     if(map.get(i) != null){
                         try {
@@ -135,11 +109,7 @@ public class DS3Receiver implements Runnable{
                 }
             }
 
-//            try {
-//                player.playBlock(decryptedBlock);
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
+
 
         }
         player.close();

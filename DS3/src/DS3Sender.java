@@ -73,14 +73,8 @@ public class DS3Sender implements Runnable{
         while (running) {
             try {
                 byte[] buffer = new byte[512];
-                //Vector used to store audio blocks (32ms/512bytes each)
-                //Vector<byte[]> voiceVector = new Vector<byte[]>();
 
-                //Initialise AudioPlayer and AudioRecorder objects
                 buffer = recorder.getBlock();
-                //Make a DatagramPacket from it, with client address and port number
-
-
 
                 ByteBuffer unwrapEncrypt = ByteBuffer.allocate(buffer.length);
                 ByteBuffer plainAudio = ByteBuffer.wrap(buffer);
